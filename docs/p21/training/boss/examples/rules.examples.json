@@ -1,0 +1,44 @@
+[
+  {
+    "id": "ex-sample-001",
+    "userPrompt": "Hold any sales order over $25,000 until a supervisor releases it in P21",
+    "tags": ["order", "hold", "approval", "threshold", "sales"],
+    "outline": "Rule should trigger on order total; set hold or queue for supervisor release; log customer and order id.",
+    "p21Notes": "Align with your hold codes and order-entry window; test in non-prod first."
+  },
+  {
+    "id": "ex-credit-002",
+    "userPrompt": "Block shipment if the customer is over their credit limit on open AR",
+    "tags": ["credit", "AR", "order", "shipment", "customer"],
+    "outline": "Evaluate open AR vs credit limit; message or hold; may reference OrderCreditCheck-style checks.",
+    "p21Notes": "See bundle examples for credit patterns; confirm company/branch rules."
+  },
+  {
+    "id": "ex-discount-003",
+    "userPrompt": "When the user enters a discount percent on the order header, add or update an other-charge line for ORDER DISCOUNT",
+    "tags": ["discount", "order entry", "other charge", "line", "button"],
+    "outline": "On-demand button → add line item or update unit price; multi-row aware.",
+    "p21Notes": "Similar to AddNewRowForDiscount-style rules; validate item master for other charge SKU."
+  },
+  {
+    "id": "ex-field-004",
+    "userPrompt": "Prevent certain roles from editing cost fields on purchase orders",
+    "tags": ["field", "protection", "role", "PO", "security"],
+    "outline": "Field-level rule by role/company; suppress or lock on change.",
+    "p21Notes": "Field protector patterns in bundle; map to your security groups."
+  },
+  {
+    "id": "ex-route-005",
+    "userPrompt": "Require a shipping route before the user can save the order",
+    "tags": ["route", "validation", "required", "save"],
+    "outline": "Validate before commit; clear message if missing.",
+    "p21Notes": "Require_Route patterns; confirm trigger (before save vs on demand)."
+  },
+  {
+    "id": "ex-message-006",
+    "userPrompt": "Show a custom message when expedite date is set but the line is not expeditable",
+    "tags": ["message", "expedite", "suppress", "alert"],
+    "outline": "Message handler or suppressor; conditional display.",
+    "p21Notes": "Message handler examples in bundle; test message codes."
+  }
+]

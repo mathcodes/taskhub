@@ -15,3 +15,15 @@ export function getOpenAIKey(): string | undefined {
 export function getOpenAIChatModel(): string {
   return process.env.OPENAI_CHAT_MODEL?.trim() || "gpt-4o-mini";
 }
+
+/**
+ * Public URL for links in emails/SMS (no trailing slash).
+ * Prefer NEXT_PUBLIC_APP_URL; on Vercel, VERCEL_URL is set (no scheme).
+ */
+export function getAppBaseUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_APP_URL?.trim() || process.env.APP_BASE_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, "");
+  const v = process.env.VERCEL_URL?.trim();
+  if (v) return `https://${v.replace(/\/$/, "")}`;
+  return "http://localhost:3000";
+}

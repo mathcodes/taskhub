@@ -1,5 +1,5 @@
 /** Allowed in-app paths for voice-triggered navigation (no query strings). */
-const ALLOWED = new Set(["/", "/taskhub", "/p21"]);
+const ALLOWED = new Set(["/", "/taskhub", "/p21", "/p21/boss", "/playbooks"]);
 
 /**
  * Returns a safe internal path or null if the model output should be ignored.

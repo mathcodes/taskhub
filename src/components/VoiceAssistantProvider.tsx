@@ -13,6 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { VoiceChatTurn } from "@/lib/agents/voiceAssistantTurn";
 import { getSpeechRecognitionCtor, type SpeechRecognitionLike } from "@/lib/speechRecognition";
 import { insertDictatedTextIntoFocusedField } from "@/lib/insertDictatedText";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 import { OpenAIKeyButton } from "@/components/OpenAIKeyModal";
 import { useOpenAIFetchHeaders } from "@/components/UserOpenAIKeyProvider";
 
@@ -346,12 +347,12 @@ function VoiceChromeController({
             priorMessages: messages,
           }),
         });
-        const data = (await res.json()) as {
+        const data = await readJsonResponse<{
           error?: string;
           reply?: string;
           createdTaskCount?: number;
           navigateTo?: string | null;
-        };
+        }>(res);
         if (!res.ok) throw new Error(data.error || "Voice request failed");
         const assistantMsg: VoiceChatTurn = {
           role: "assistant",

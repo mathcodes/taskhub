@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useOpenAIFetchHeaders } from "@/components/UserOpenAIKeyProvider";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 
 type ApiResponse = {
   question: string;
@@ -9,6 +10,7 @@ type ApiResponse = {
   explanation: string;
   tablesReferenced: string[];
   schema: { tablesMatched: string[]; dictionaryRowsUsed: number };
+  examples?: { curatedMatched: number; curatedIds: string[] };
   review: {
     approved: boolean;
     severity: string;
@@ -39,7 +41,7 @@ export function P21QueryPanel() {
         },
         body: JSON.stringify({ question }),
       });
-      const data = await res.json();
+      const data = await readJsonResponse<ApiResponse & { error?: string }>(res);
       if (!res.ok) throw new Error(data.error || "Request failed");
       setOut(data as ApiResponse);
     } catch (e) {
@@ -86,6 +88,13 @@ export function P21QueryPanel() {
               {out.schema.tablesMatched.length
                 ? out.schema.tablesMatched.join(", ")
                 : "—"}
+              {out.examples && out.examples.curatedMatched > 0 ? (
+                <>
+                  {" "}
+                  · Curated examples in prompt: {out.examples.curatedMatched}
+                  {out.examples.curatedIds.length ? ` (${out.examples.curatedIds.join(", ")})` : ""}
+                </>
+              ) : null}
             </p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-black/30 p-4">

@@ -1,0 +1,212 @@
+using P21.Extensions.BusinessRule;
+using System;
+using System.Configuration;
+using System.Data;
+using System.IO;
+using System.Text;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+
+namespace DCNA_BR_TEMPLATE_v1
+{
+	[RuleDescription("DCNA_BR_TEMPLATE_v1", "DCNA_BR_Template")]
+	public class DCNA_BR_TEMPLATE_v1 : P21.Extensions.BusinessRule.Rule
+	{
+		private readonly StringBuilder _buffer = new StringBuilder();
+		private string _logFilePath;
+		string fileName = "";
+
+		public override RuleResult Execute()
+		{
+			var result = new RuleResult();
+			string ruleName = GetType().Name;
+			LogLine($"Executing rule: {ruleName}");
+
+			// Init log file
+			InitLogFile(ruleName);
+
+			var appConfig = ConfigurationManager.OpenExeConfiguration(
+				System.Reflection.Assembly.GetExecutingAssembly().Location
+			);
+			bool verbose = string.Equals(appConfig.AppSettings.Settings["VERBOSE"]?.Value, "ON", StringComparison.OrdinalIgnoreCase);
+			bool logging = string.Equals(appConfig.AppSettings.Settings["LOGGING"]?.Value, "ON", StringComparison.OrdinalIgnoreCase);
+			bool testing = string.Equals(appConfig.AppSettings.Settings["TESTING"]?.Value, "ON", StringComparison.OrdinalIgnoreCase);
+
+			LogLine($"AppSettings: VERBOSE={verbose}  LOGGING={logging}  TESTING={testing}");
+
+			try
+			{
+				if (verbose)
+				{
+
+					LogPayLoad();
+				}
+
+
+
+		// RULE LOGIC GOES HERE
+
+
+ 
+ 
+	}
+			catch (Exception ex)
+			{
+				result.Success = false;
+				result.Message = $"{ruleName} failed: {ex.Message}";
+				if (logging)
+				{
+					LogLine("------------- exception -------------");
+					LogLine(ex.ToString());
+				}
+			}
+			finally
+			{
+				if (logging)
+				{
+					LogLine($"===== {ruleName} end (success={result.Success}) =====");
+					FlushLog();
+				}
+			}
+
+			return result;
+		}
+
+
+		struct udtRowData
+		{
+			public int order_no;
+			public int oe_line_uid;
+			public int row_uid;
+			public decimal line_freight_out;
+			public decimal line_freight_in;
+			public decimal hdr_freight_out;
+			public decimal hdr_freight_in;
+		}
+
+		List<udtRowData> lst_udtRowData = new List<udtRowData>();
+
+
+		private string GetUDTRowData()
+		{
+			lst_udtRowData = new List<udtRowData>();
+			string qry = $"select " +
+							$" COALESCE(oe_hdr_order_no, '') as [oe_hdr_order_no]," +
+							$" COALESCE(oe_line_oe_line_uid, '') as [oe_line_oe_line_uid], " +
+							$" COALESCE(udt_freight_cost_uid, '') as [udt_freight_cost_uid], " +
+							$" COALESCE(oe_hdr_freight_out, '') as [oe_hdr_freight_out], " +
+							$" COALESCE(oe_line_freight_in, '') as [oe_line_freight_in], " +
+							$" COALESCE(ud_order_line_freight_out, '') as [ud_order_line_freight_out], " +
+							$" COALESCE(ud_order_hdr_freight_in, '') as [ud_order_hdr_freight_in] " +
+							$" from udt_freight_cost";
+
+
+			SqlCommand sqlCommand = new SqlCommand(qry);
+			sqlCommand.CommandType = CommandType.Text;
+
+
+			using (SqlCommand selectCommand = sqlCommand)
+			{
+				DataTable dataTable = new DataTable();
+				try
+				{
+					for (int i = 0; i < dataTable.Rows.Count; i++)
+					{
+						lst_udtRowData.Add(new udtRowData
+						{
+							order_no = (int)dataTable.Rows[i]["oe_hdr_order_no"],
+							oe_line_uid = (int)dataTable.Rows[i]["oe_line_oe_line_uid"],
+							row_uid = (int)dataTable.Rows[i]["udt_freight_cost_uid"],
+							line_freight_out = (decimal)dataTable.Rows[i]["oe_hdr_freight_out"],
+							oe_line_freight_in = (decimal)dataTable.Rows[i]["oe_line_freight_in"],
+							ud_order_line_freight_out = (decimal)dataTable.Rows[i]["ud_order_line_freight_out"],
+							ud_order_hdr_freight_in = (decimal)dataTable.Rows[i]["ud_order_hdr_freight_in"],
+						});						
+					}
+					new SqlDataAdapter(selectCommand).Fill(dataTable);
+					return dataTable.Rows.Count > 1 || dataTable.Rows.Count == 1 ? dataTable.Rows[0]["role"].ToString() : "no role returned";
+				}
+				catch (Exception ex)
+				{
+					Log.AddAndPersist($"exception occured: {ex}");
+					return $"exception occured: {ex}";
+				}
+			}
+		}
+
+
+		// Custom log write (replaces Log.Add)
+		private void LogLine(string message)
+		{
+			_buffer.AppendLine(message);
+		}
+
+		private void InitLogFile(string ruleName)
+		{
+			string userId = Session?.UserID ?? "UnknownUser";
+			string safeUser = SanitizeForFile(userId);
+			string ts = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+
+			LogLine($"Log start: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+
+			LogLine($"Server\\Database={Session.Server}\\{Session.Database}");
+			LogLine($"userId: {userId}\n safeUser: {safeUser}\n ts: {ts}");
+
+			fileName = $"{ruleName}_{safeUser}_{ts}.log";
+			string baseDir = @"\\p21us.epicordistribution.com\111599Files\Shared\Business_Rules\Play\logs";
+
+			Directory.CreateDirectory(baseDir);
+			_logFilePath = Path.Combine(baseDir, fileName);
+			LogLine($"Log file: {_logFilePath}");
+		}
+
+		private void FlushLog()
+		{
+			if (string.IsNullOrEmpty(_logFilePath)) return;
+
+			try
+			{
+				File.WriteAllText(_logFilePath, _buffer.ToString(), Encoding.UTF8);
+			}
+			catch (Exception ex)
+			{
+				// use File.AppendAllText to a known fallback file
+				string fallbackPath = Path.Combine(_logFilePath, $"{fileName}.log");
+			}
+		}
+
+		private static string SanitizeForFile(string input)
+		{
+			if (string.IsNullOrWhiteSpace(input)) return "Unknown";
+			string invalid = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
+			return Regex.Replace(input.Trim(), $"[{invalid}]", "_");
+		}
+
+		private void LogPayLoad()
+		{
+			if (!RuleState.MultiRow) // single row
+			{
+				foreach (DataField field in Data.Fields)
+				{
+					LogLine($"[{field.TableName}].[{field.FieldName}] = [{field.FieldValue}]");
+				}
+			}
+			else // multi row
+			{
+				foreach (DataTable dt in Data.Set.Tables)
+				{
+					for (int r = 0; r < dt.Rows.Count; r++)
+					{
+						var dr = dt.Rows[r];
+						foreach (DataColumn dc in dt.Columns)
+						{
+							LogLine($"[{dt.TableName}].[{dc.ColumnName}].[{r}] = [{dr[dc]}]");
+						}
+					}
+				}
+			}
+		}
+	}
+}

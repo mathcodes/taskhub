@@ -12,6 +12,7 @@ Rules:
 - Generate **read-only** queries: SELECT (and CTEs, JOINs, WHERE, GROUP BY, window functions as needed).
 - **Never** emit INSERT, UPDATE, DELETE, MERGE, DROP, ALTER, TRUNCATE, EXEC, xp_, OPENROWSET, or DDL.
 - Use only tables and columns that appear in the SCHEMA CONTEXT below. If something is missing, say so in explanation and use the closest valid objects.
+- When CURATED EXAMPLES appear below, treat them as **style and join patterns** from your organization; still prefer table/column names from SCHEMA CONTEXT when they differ.
 - Prefer clear column aliases and reasonable row limits for ad-hoc exploration (e.g. TOP (500)) unless the user asks otherwise.
 - Return **strictly valid JSON** only (no markdown fences), shape:
 {"sql":"...","explanation":"...","tablesReferenced":["table1","table2"]}
@@ -20,9 +21,21 @@ Rules:
 export async function runNlToSqlAgent(params: {
   userQuestion: string;
   schemaMarkdown: string;
+  /** Retrieved curated NL→SQL pairs (markdown); optional */
+  curatedExamplesMarkdown?: string;
   apiKey?: string;
 }): Promise<NlToSqlResult> {
-  const user = `SCHEMA CONTEXT (retrieved dictionary — not exhaustive of entire P21, only relevant tables/columns):
+  const curated =
+    params.curatedExamplesMarkdown?.trim() &&
+    `CURATED EXAMPLES (approved NL→SQL pairs — match style; validate objects against schema):
+
+${params.curatedExamplesMarkdown.trim()}
+
+---
+
+`;
+
+  const user = `${curated}SCHEMA CONTEXT (retrieved dictionary — not exhaustive of entire P21, only relevant tables/columns):
 
 ${params.schemaMarkdown}
 

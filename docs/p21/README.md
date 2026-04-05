@@ -7,6 +7,7 @@ Use this folder for **anything that isn’t application code** but supports desi
 | Path | Use for |
 |------|--------|
 | **`training/`** | Onboarding, prompt examples, “how to ask for reports,” safety rules for agents, evaluation rubrics |
+| **`training/boss/`** | **BOSS** business-rule agent: markdown docs, `examples/rules.examples.json`, see `boss/README.md` |
 | **`reference/`** | Data dictionary, approved schemas/tables, SQL dialect notes, glossary |
 | **`runbooks/`** | Incident steps, how to rotate credentials, how to audit generated SQL |
 | **`research/`** | Notes, links, ADRs, spikes (optional) |

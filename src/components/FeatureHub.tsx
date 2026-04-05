@@ -30,6 +30,14 @@ const FEATURES: Feature[] = [
       "Agents that turn plain-English requests into SQL, run them safely against your data, and return reports with charts using the best-fit visualization. (In development.)",
     accent: "from-violet-500/20 to-fuchsia-600/10 border-violet-500/30 hover:border-violet-400/50",
   },
+  {
+    href: "/playbooks",
+    title: "Department playbooks",
+    tagline: "SOPs → guided runs for the floor",
+    description:
+      "Supervisors upload JSON checklists; an agent expands each step into a walkthrough. Assign workers by email or SMS—they get a private link to complete steps and log notes. Built for warehouse, DC, and counter workflows.",
+    accent: "from-amber-500/20 to-orange-600/10 border-amber-500/30 hover:border-amber-400/50",
+  },
 ];
 
 export function FeatureHub() {
@@ -41,7 +49,7 @@ export function FeatureHub() {
       pathname: pathname || "/",
       viewLabel: "Home · Choose a feature",
       summary:
-        "Landing page with links to Task Hub (weekly tasks, logs, voice assistant) and P21 SQL Query Master (natural language to T-SQL). User can say e.g. open task hub or go to P21 to navigate.",
+        "Landing page with links to Task Hub, P21 SQL Query Master, and Department playbooks (SOP uploads and worker assignments). User can say e.g. open task hub, go to P21, or open playbooks to navigate.",
     });
     return () => setVoicePageContext(null);
   }, [pathname, setVoicePageContext]);
@@ -60,7 +68,7 @@ export function FeatureHub() {
         </p>
       </header>
 
-      <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
+      <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
         {FEATURES.map((f) => (
           <li key={f.href}>
             <Link

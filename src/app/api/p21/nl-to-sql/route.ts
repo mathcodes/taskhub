@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { resolveOpenAIKeyFromRequest } from "@/lib/openaiRequestKey";
 import { runNlToSqlAgent } from "@/lib/p21/agents/nlToSqlAgent";
 import { runSqlReviewAgent } from "@/lib/p21/agents/sqlReviewAgent";
+import { retrieveRelevantNlSqlExamples } from "@/lib/p21/nlSqlExamples";
 import { retrieveRelevantSchema } from "@/lib/p21/schemaDictionary";
 
 export const runtime = "nodejs";
@@ -32,9 +33,14 @@ export async function POST(req: Request) {
 
   try {
     const { markdown, tables, rowCount } = retrieveRelevantSchema(question, { maxTables: 14 });
+    const { markdown: examplesMd, exampleIds, count: examplesCount } = retrieveRelevantNlSqlExamples(
+      question,
+      { maxExamples: 4 }
+    );
     const nl = await runNlToSqlAgent({
       userQuestion: question,
       schemaMarkdown: markdown,
+      curatedExamplesMarkdown: examplesMd || undefined,
       apiKey,
     });
 
@@ -55,6 +61,10 @@ export async function POST(req: Request) {
       schema: {
         tablesMatched: tables,
         dictionaryRowsUsed: rowCount,
+      },
+      examples: {
+        curatedMatched: examplesCount,
+        curatedIds: exampleIds,
       },
       review,
     });

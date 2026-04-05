@@ -14,12 +14,15 @@ Vercel’s serverless runtime does **not** support a durable on-disk SQLite file
 
    | Name | Required | Notes |
    |------|----------|--------|
-   | `DATABASE_URL` | Yes | Often Neon’s **pooled** connection (hostname contains `-pooler`) |
-   | `DIRECT_URL` | Yes if pooled | Neon’s **direct** (non-pooler) URL — required for `prisma migrate deploy` when `DATABASE_URL` uses the pooler (avoids **P1002** timeouts) |
+   | `DATABASE_URL` | Yes | Postgres URL (Neon pooled or direct). If `prisma migrate deploy` times out (**P1002**), use Neon’s **direct** URL for builds or run migrations locally. |
    | `OPENAI_API_KEY` | Optional | If unset, users can use BYOK in the app |
    | `TASKHUB_TIMEZONE` | Optional | e.g. `America/New_York` |
+   | `NEXT_PUBLIC_APP_URL` | Recommended | Your site URL (used in playbook assignment emails/SMS). Vercel: `https://<project>.vercel.app` |
+   | `RESEND_API_KEY` | Optional | Department playbooks: email workers their checklist link |
+   | `RESEND_FROM_EMAIL` | Optional | Verified sender, e.g. `Task Hub <noreply@yourdomain.com>` |
+   | `TWILIO_*` | Optional | Playbooks SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` |
 
-   In the Neon dashboard: **Connection details** → copy **Pooled** into `DATABASE_URL` and **Direct** into `DIRECT_URL`. If you use a **single direct URL** for `DATABASE_URL` (no `-pooler` in the host), you do **not** need `DIRECT_URL` (the build script defaults it).
+   Neon: **Pooled** is fine for the running app. If migrations fail on the pooler host, switch `DATABASE_URL` to the **direct** connection for the deploy step or run `npx prisma migrate deploy` from your machine with the direct URL.
 
 3. **Deploy**  
    The build runs `prisma migrate deploy && next build`, which applies migrations to your database and then builds Next.js.
@@ -34,12 +37,7 @@ Vercel’s serverless runtime does **not** support a durable on-disk SQLite file
 
 ## Error `P1002` — timed out (Neon)
 
-Usually means **`prisma migrate deploy` is using the pooler**. Use a **direct** connection for migrations:
-
-- Add **`DIRECT_URL`** = Neon’s **Direct** connection string (host **without** `-pooler`), **or**
-- Use only a **direct** `DATABASE_URL` (no pooler hostname) for both app and migrations.
-
-See the environment table above.
+Usually means **`prisma migrate deploy` is using the pooler**. Use Neon’s **direct** connection string for the step that runs migrations (e.g. set `DATABASE_URL` to direct in the Vercel build env, or run `npx prisma migrate deploy` locally with the direct URL).
 
 ## Error `P1012` — URL must start with `postgresql://`
 

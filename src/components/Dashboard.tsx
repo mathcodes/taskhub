@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useVoicePageContext } from "@/components/VoiceAssistantProvider";
+import { readJsonResponse } from "@/lib/readJsonResponse";
 import { useOpenAIFetchHeaders } from "@/components/UserOpenAIKeyProvider";
 
 const DAYS = [
@@ -88,16 +89,26 @@ export function Dashboard() {
         fetch("/api/tasks"),
         fetch("/api/snapshot"),
       ]);
-      const tJson = await tRes.json();
-      const sJson = await sRes.json();
+      const tJson = await readJsonResponse<{ error?: string; tasks?: TaskRow[] }>(tRes);
+      const sJson = await readJsonResponse<{
+        error?: string;
+        snapshot?: {
+          slots: Slot[];
+          todayKey: string;
+          timezone: string;
+          counts: Record<string, number>;
+        };
+      }>(sRes);
       if (!tRes.ok) throw new Error(tJson.error || "tasks failed");
       if (!sRes.ok) throw new Error(sJson.error || "snapshot failed");
-      setTasks(tJson.tasks);
-      setSlots(sJson.snapshot.slots);
+      const snap = sJson.snapshot;
+      if (!snap) throw new Error("snapshot missing");
+      setTasks(tJson.tasks ?? []);
+      setSlots(snap.slots);
       setSnapshotMeta({
-        todayKey: sJson.snapshot.todayKey,
-        timezone: sJson.snapshot.timezone,
-        counts: sJson.snapshot.counts,
+        todayKey: snap.todayKey,
+        timezone: snap.timezone,
+        counts: snap.counts,
       });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "load error");
@@ -224,7 +235,7 @@ export function Dashboard() {
         })),
       }),
     });
-    const data = await res.json();
+    const data = await readJsonResponse<{ error?: string }>(res);
     if (!res.ok) {
       setErr(data.error || "create failed");
       return;
@@ -240,7 +251,7 @@ export function Dashboard() {
     if (!confirm("Delete this task and its logs?")) return;
     const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
     if (!res.ok) {
-      const data = await res.json();
+      const data = await readJsonResponse<{ error?: string }>(res);
       setErr(data.error || "delete failed");
       return;
     }
@@ -257,7 +268,7 @@ export function Dashboard() {
         notes: notes.trim() || null,
       }),
     });
-    const data = await res.json();
+    const data = await readJsonResponse<{ error?: string }>(res);
     if (!res.ok) {
       setErr(data.error || "log failed");
       return;
@@ -276,7 +287,7 @@ export function Dashboard() {
         method: "POST",
         headers: getAIHeaders(),
       });
-      const data = await res.json();
+      const data = await readJsonResponse<{ error?: string; agent?: MonitorAgentPayload }>(res);
       if (!res.ok) throw new Error(data.error || "monitor failed");
       setMonitorOut(data.agent as MonitorAgentPayload);
     } catch (e) {
@@ -294,9 +305,9 @@ export function Dashboard() {
         method: "POST",
         headers: getAIHeaders(),
       });
-      const data = await res.json();
+      const data = await readJsonResponse<{ error?: string; markdown?: string }>(res);
       if (!res.ok) throw new Error(data.error || "daily failed");
-      setDailyMd(data.markdown);
+      setDailyMd(data.markdown ?? null);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "daily error");
     } finally {

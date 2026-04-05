@@ -5,11 +5,11 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
-// Neon: use pooled `DATABASE_URL` for the app; non-pooler `DIRECT_URL` for migrations (avoids P1002/timeouts on migrate deploy).
+// Use `DATABASE_URL` for queries and migrations. (Neon: if migrate deploy times out with a pooler host,
+// run migrations with a direct connection string, or use a separate CI job—see VERCEL.md.)
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 /// A recurring task you want to track (e.g. "Morning standup prep").
@@ -64,4 +64,76 @@ model DailyReport {
   createdAt    DateTime @default(now())
 
   @@unique([reportDate])
+}
+
+// --- Department playbooks (supervisor upload → agent walkthrough → assign workers) ---
+
+model PlaybookTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  department  String?
+  /// Original upload JSON (validated)
+  rawJson     String   @db.Text
+  /// Agent-expanded steps JSON: array of { index, title, instruction, guidance, recordHint }
+  stepsJson   String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments PlaybookAssignment[]
+}
+
+model PlaybookAssignment {
+  id           String           @id @default(cuid())
+  playbookId   String
+  playbook     PlaybookTemplate @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  /// Optional batch / shift label
+  label        String?
+  createdAt    DateTime         @default(now())
+
+  workers PlaybookAssignmentWorker[]
+
+  @@index([playbookId])
+}
+
+model PlaybookAssignmentWorker {
+  id           String             @id @default(cuid())
+  assignmentId String
+  assignment   PlaybookAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  displayName  String
+  email        String?
+  phone        String?
+  /// Secret path token for magic link /playbooks/r/[accessToken]
+  accessToken  String             @unique
+  notifiedAt   DateTime?
+  createdAt    DateTime           @default(now())
+
+  run PlaybookRun?
+
+  @@index([assignmentId])
+}
+
+model PlaybookRun {
+  id          String                   @id @default(cuid())
+  workerId    String                   @unique
+  worker      PlaybookAssignmentWorker @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  status      String                   @default("pending")
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  stepResults PlaybookStepResult[]
+
+  @@index([status])
+}
+
+model PlaybookStepResult {
+  id          String      @id @default(cuid())
+  runId       String
+  run         PlaybookRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepIndex   Int
+  done        Boolean     @default(true)
+  note        String?
+  completedAt DateTime    @default(now())
+
+  @@unique([runId, stepIndex])
+  @@index([runId])
 }

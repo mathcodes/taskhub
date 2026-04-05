@@ -26,6 +26,17 @@ export default function P21Page() {
           executed here—copy to SSMS or your approved tool.
         </p>
 
+        <p className="mt-6 text-sm text-zinc-500">
+          <a
+            href="/p21/boss"
+            className="font-medium text-fuchsia-400/90 hover:text-fuchsia-300"
+          >
+            BOSS — Business Rule agent
+          </a>{" "}
+          — multi-agent rule specs from prompts (training in{" "}
+          <code className="font-mono text-xs text-zinc-600">docs/p21/training/boss/</code>).
+        </p>
+
         <div className="mt-10">
           <P21QueryPanel />
         </div>
@@ -39,9 +50,11 @@ export default function P21Page() {
             <code className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-xs text-zinc-300">
               docs/p21/
             </code>
-            . The CSV is a <strong className="text-zinc-300">schema dictionary</strong> (table,
-            column, description)—not execution logs. For higher quality, add curated NL→SQL pairs
-            there later and we can wire retrieval from them in a follow-up.
+          . The CSV is a <strong className="text-zinc-300">schema dictionary</strong> (table,
+          column, description)—not execution logs. Add curated NL→SQL pairs in{" "}
+          <code className="font-mono text-xs text-zinc-500">docs/p21/training/nl_sql_examples.json</code>{" "}
+          (see <code className="font-mono text-xs text-zinc-500">training/README.md</code>) for
+          higher quality.
           </p>
         </section>
       </div>
