@@ -1,4 +1,4 @@
-// Task Hub — local SQLite for tasks, weekly schedules, and completion logs
+// Task Hub — PostgreSQL in production (e.g. Vercel + Neon); local dev uses DATABASE_URL
 
 generator client {
   provider = "prisma-client-js"
@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
