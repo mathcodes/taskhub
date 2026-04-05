@@ -1,0 +1,65 @@
+// Task Hub — local SQLite for tasks, weekly schedules, and completion logs
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A recurring task you want to track (e.g. "Morning standup prep").
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  active      Boolean  @default(true)
+  /// Higher = more urgent in UI / agent context
+  priority    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  schedules TaskSchedule[]
+  logs      TaskCompletionLog[]
+}
+
+/// Which weekday(s) this task applies to. Optional due time is local wall clock (TASKHUB_TIMEZONE).
+model TaskSchedule {
+  id        String @id @default(cuid())
+  taskId    String
+  task      Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  /// 0 = Sunday … 6 = Saturday (JS getDay convention)
+  dayOfWeek Int
+  /// "HH:MM" 24h, optional — if null, "due" is end of that calendar day
+  dueTime   String?
+
+  @@index([taskId])
+}
+
+/// Append-only log when you complete a task (rating, notes, optional JSON metadata).
+model TaskCompletionLog {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+  rating      Int?
+  notes       String?
+  /// Extra structured fields from UI or automation (JSON string)
+  meta        String?
+
+  @@index([taskId])
+  @@index([completedAt])
+}
+
+/// Cached daily summary from the daily-summary agent (optional persistence).
+model DailyReport {
+  id           String   @id @default(cuid())
+  /// Calendar day in TASKHUB_TIMEZONE (store as UTC midnight of that day or ISO date string)
+  reportDate   String
+  bodyMarkdown String
+  createdAt    DateTime @default(now())
+
+  @@unique([reportDate])
+}
