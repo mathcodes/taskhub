@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task Hub
 
-## Getting Started
+**Agentic Task Hub** is a [Next.js](https://nextjs.org) app for weekly recurring tasks, completion logs, and optional AI features: a **monitor** agent (alerts from your snapshot), a **daily summary** agent (Markdown brief), and a **voice assistant** that understands what’s on screen and can add tasks from natural language.
 
-First, run the development server:
+Dark UI, SQLite + [Prisma](https://www.prisma.io/) locally, and support for **bring-your-own-key (BYOK)** OpenAI so you can deploy publicly without putting your API key in server env.
+
+---
+
+## Screenshots
+
+### Today & dashboard
+
+The **Today** tab lists today’s scheduled slots from your weekly rules, with status (e.g. due soon, overdue), due times in your configured timezone, and **Log completion** for check-ins.
+
+The header includes **API key** (BYOK) and the **voice** mic, aligned to the main content column.
+
+![Today tab: schedules, API key and mic in the header, Today’s slots with Log completion](public/IMG1.png)
+
+### Voice assistant
+
+Voice is **toggle-based**: turn the mic on, speak (optionally about the current tab or your tasks), then turn it off to send the transcript to the model. The panel shows conversation history and on-screen hints when the mic is idle.
+
+![Voice panel: mic off instructions](public/IMG2.png)
+
+When the mic is **on**, the control highlights (teal) so you know listening is active. You can **Hide panel** without turning the mic off, or use **API key** to save your OpenAI key in the browser only.
+
+![Header controls: API key, Hide panel, active microphone](public/IMG3.png)
+
+---
+
+## Features
+
+| Area | What it does |
+|------|----------------|
+| **Tasks** | Create tasks with title, description, priority, and weekly schedules (weekday + optional `HH:MM` in your timezone). |
+| **Today** | Derived “slots” for the current day; log completions with optional rating and notes. |
+| **Activity log** | History of completions across tasks. |
+| **Agents** | **Monitor** — JSON alerts/insights from a live snapshot; **Daily summary** — Markdown report from yesterday’s logs + today’s snapshot. |
+| **Voice** | Page-aware chat + optional task creation; requires an OpenAI key (server env or BYOK). |
+| **BYOK** | Paste your key in **API key**; stored in `localStorage` only, sent over HTTPS on AI requests. Falls back to `OPENAI_API_KEY` on the server if unset. |
+
+---
+
+## Requirements
+
+- **Node.js** 20+ (recommended)
+- **npm** (or pnpm/yarn/bun)
+- **OpenAI** API access for AI features (or rely on server-side `OPENAI_API_KEY` in development)
+
+---
+
+## Getting started
+
+### 1. Install
+
+```bash
+npm install
+```
+
+### 2. Environment
+
+Copy the example env and adjust:
+
+```bash
+cp .env.example .env
+```
+
+Important variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | SQLite default: `file:./dev.db` (relative to Prisma usage; see `.env.example`) |
+| `OPENAI_API_KEY` | Optional on the server if every user brings their own key (BYOK) |
+| `TASKHUB_TIMEZONE` | IANA timezone for schedules (e.g. `America/New_York`) |
+| `OPENAI_CHAT_MODEL` | Optional override (default `gpt-4o-mini`) |
+
+### 3. Database
+
+```bash
+npx prisma migrate dev
+```
+
+This creates/updates the local SQLite DB from `prisma/migrations`.
+
+### 4. Dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Next.js dev server |
+| `npm run build` | `prisma generate` + `next build` |
+| `npm run start` | Production server |
+| `npm run lint` | ESLint |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Project layout (high level)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `src/app/` — App Router pages and `api/` routes (tasks, snapshot, agents, voice).
+- `src/components/` — `Dashboard`, voice + BYOK UI.
+- `src/lib/` — Prisma client, scheduling/snapshot helpers, OpenAI agents.
+- `prisma/` — Schema and migrations (SQLite by default).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Deploying publicly
+
+- Set `DATABASE_URL` to your host’s Postgres/SQLite path if you leave SQLite behind.
+- For **no shared OpenAI bill**, omit `OPENAI_API_KEY` and document that users must use **API key** in the app (BYOK).
+- Use **HTTPS** in production; voice uses the browser **Web Speech API** (e.g. Chromium, Safari).
+
+---
+
+## Learn more
+
+- [Next.js documentation](https://nextjs.org/docs)
+- [Prisma documentation](https://www.prisma.io/docs)
+
+---
+
+## Legal (disclaimers, terms, privacy)
+
+This project includes **generic legal-style documents** to document limitations of liability and AI-related risks. **They are not legal advice** and may not be sufficient for your situation or jurisdiction.
+
+| Document | Purpose |
+|----------|---------|
+| [`DISCLAIMER.md`](DISCLAIMER.md) | “As is” software, **no warranty**, **limitation of liability**, AI output risks, third-party services |
+| [`TERMS_OF_USE.md`](TERMS_OF_USE.md) | End-user style **acceptable use**, AI/BYOK responsibilities, **indemnification** (template — fill in governing law) |
+| [`PRIVACY.md`](PRIVACY.md) | High-level **privacy** notes for self-hosting, BYOK, and third parties (template for your own policy) |
+
+**You** (maintainer or host) should have a **qualified attorney** review these before relying on them for a public product, company, or regulated environment.
+
+---
+
+## License
+
+Private / your choice — add a `LICENSE` file if you open-source the repo.
