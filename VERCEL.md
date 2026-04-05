@@ -32,3 +32,11 @@ Vercel’s serverless runtime does **not** support a durable on-disk SQLite file
 ## Migrating from an old SQLite checkout
 
 If you previously used `file:./dev.db`, switch `.env` to a Postgres URL, run `npx prisma migrate dev` locally once, and redeploy.
+
+## Node.js version
+
+This repo pins **Node 20 LTS** via `package.json` → `engines` and `.nvmrc`. Vercel uses `engines.node` for installs and builds—avoid Node 24 unless you have a specific need.
+
+## Skew Protection (dashboard)
+
+**Skew Protection** must be turned on in the Vercel project UI (not in this repo): **Project → Settings → Runtime / Deployment Protection** (wording varies). Enable it to reduce mismatches between a new deployment’s server and an old tab still running previous client JS after a deploy.

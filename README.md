@@ -43,7 +43,7 @@ When the mic is **on**, the control highlights (teal) so you know listening is a
 
 ## Requirements
 
-- **Node.js** 20+ (recommended)
+- **Node.js** **20.x** (LTS; see `engines` in `package.json` and `.nvmrc`)
 - **npm** (or pnpm/yarn/bun)
 - **OpenAI** API access for AI features (or rely on server-side `OPENAI_API_KEY` in development)
 
