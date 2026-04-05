@@ -53,6 +53,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       reply: result.reply,
       createdTaskCount: result.createdTaskCount,
+      navigateTo: result.navigateTo,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Voice chat failed";

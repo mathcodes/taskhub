@@ -14,9 +14,12 @@ Vercel’s serverless runtime does **not** support a durable on-disk SQLite file
 
    | Name | Required | Notes |
    |------|----------|--------|
-   | `DATABASE_URL` | Yes | Postgres URL from Neon/host |
+   | `DATABASE_URL` | Yes | Often Neon’s **pooled** connection (hostname contains `-pooler`) |
+   | `DIRECT_URL` | Yes if pooled | Neon’s **direct** (non-pooler) URL — required for `prisma migrate deploy` when `DATABASE_URL` uses the pooler (avoids **P1002** timeouts) |
    | `OPENAI_API_KEY` | Optional | If unset, users can use BYOK in the app |
    | `TASKHUB_TIMEZONE` | Optional | e.g. `America/New_York` |
+
+   In the Neon dashboard: **Connection details** → copy **Pooled** into `DATABASE_URL` and **Direct** into `DIRECT_URL`. If you use a **single direct URL** for `DATABASE_URL` (no `-pooler` in the host), you do **not** need `DIRECT_URL` (the build script defaults it).
 
 3. **Deploy**  
    The build runs `prisma migrate deploy && next build`, which applies migrations to your database and then builds Next.js.
@@ -28,6 +31,15 @@ Vercel’s serverless runtime does **not** support a durable on-disk SQLite file
 
 - Ensure `DATABASE_URL` is set for **Production** (and Preview if you use preview deploys) in Vercel **before** the build runs.  
 - `postinstall` runs `prisma generate`, which needs `DATABASE_URL` present in the environment so the schema can be resolved.
+
+## Error `P1002` — timed out (Neon)
+
+Usually means **`prisma migrate deploy` is using the pooler**. Use a **direct** connection for migrations:
+
+- Add **`DIRECT_URL`** = Neon’s **Direct** connection string (host **without** `-pooler`), **or**
+- Use only a **direct** `DATABASE_URL` (no pooler hostname) for both app and migrations.
+
+See the environment table above.
 
 ## Error `P1012` — URL must start with `postgresql://`
 

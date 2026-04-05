@@ -69,7 +69,8 @@ Important variables:
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | **PostgreSQL** connection string (local Docker/Postgres, [Neon](https://neon.tech), etc.) — see `.env.example` |
+| `DATABASE_URL` | **PostgreSQL** URL — see `.env.example` |
+| `DIRECT_URL` | Optional: Neon **direct** (non-pooler) URL for migrations. Required if `DATABASE_URL` uses Neon’s pooler host (`-pooler`); see [`VERCEL.md`](VERCEL.md) |
 | `OPENAI_API_KEY` | Optional on the server if every user brings their own key (BYOK) |
 | `TASKHUB_TIMEZONE` | IANA timezone for schedules (e.g. `America/New_York`) |
 | `OPENAI_CHAT_MODEL` | Optional override (default `gpt-4o-mini`) |
@@ -106,7 +107,7 @@ npm start
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Next.js dev server |
-| `npm run build` | `prisma migrate deploy` + `next build` (needs `DATABASE_URL`) |
+| `npm run build` | `prisma migrate deploy` + `next build` (needs `DATABASE_URL`; Neon pooler also needs `DIRECT_URL`) |
 | `npm run start` | Production server |
 | `npm run lint` | ESLint |
 

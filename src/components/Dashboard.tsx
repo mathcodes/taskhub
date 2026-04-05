@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import {
-  VoiceChromePanel,
-  VoiceChromeToolbar,
-  useVoicePageContext,
-} from "@/components/VoiceAssistantProvider";
+import { useVoicePageContext } from "@/components/VoiceAssistantProvider";
 import { useOpenAIFetchHeaders } from "@/components/UserOpenAIKeyProvider";
 
 const DAYS = [
@@ -321,39 +317,33 @@ export function Dashboard() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <header className="mb-10 border-b border-zinc-800 pb-8">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
-              Agentic task hub
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
+            Agentic task hub
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-50">
+            Schedules, logs, and AI briefings
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
+            Define weekly tasks, check them off with optional ratings and notes, and let the monitor
+            and daily-summary agents read your snapshot to surface alerts and a written daily
+            report. Use the sticky voice bar above for the assistant or dictation into fields.
+          </p>
+          {snapshotMeta && (
+            <p className="mt-4 text-xs text-zinc-500">
+              Today ({snapshotMeta.timezone}):{" "}
+              <span className="font-mono text-zinc-300">{snapshotMeta.todayKey}</span>
+              {snapshotMeta.counts ? (
+                <>
+                  {" "}
+                  · incomplete {snapshotMeta.counts.incomplete ?? "—"} · due soon{" "}
+                  {snapshotMeta.counts.dueSoon ?? "—"} · overdue{" "}
+                  {snapshotMeta.counts.overdue ?? "—"}
+                </>
+              ) : null}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-50">
-              Schedules, logs, and AI briefings
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-              Define weekly tasks, check them off with optional ratings and notes, and let the
-              monitor and daily-summary agents read your snapshot to surface alerts and a written
-              daily report.
-            </p>
-            {snapshotMeta && (
-              <p className="mt-4 text-xs text-zinc-500">
-                Today ({snapshotMeta.timezone}):{" "}
-                <span className="font-mono text-zinc-300">{snapshotMeta.todayKey}</span>
-                {snapshotMeta.counts ? (
-                  <>
-                    {" "}
-                    · incomplete {snapshotMeta.counts.incomplete ?? "—"} · due soon{" "}
-                    {snapshotMeta.counts.dueSoon ?? "—"} · overdue{" "}
-                    {snapshotMeta.counts.overdue ?? "—"}
-                  </>
-                ) : null}
-              </p>
-            )}
-          </div>
-          <div className="shrink-0 sm:pt-1">
-            <VoiceChromeToolbar />
-          </div>
+          )}
         </div>
-        <VoiceChromePanel />
       </header>
 
       {err && (

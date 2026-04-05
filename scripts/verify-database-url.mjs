@@ -26,4 +26,17 @@ if (!/^postgres(ql)?:\/\//i.test(u)) {
   process.exit(1);
 }
 
+const direct = process.env.DIRECT_URL?.trim();
+// Neon: pooled URL (…-pooler…) + prisma migrate often times out (P1002). Migrations need a direct connection.
+if (/-pooler/i.test(u) && !direct) {
+  console.error(
+    "[taskhub] DATABASE_URL points at Neon’s pooler (hostname contains “-pooler”).\n" +
+      "`prisma migrate deploy` must use Neon’s non-pooler “Direct” connection.\n\n" +
+      "In Vercel → Environment Variables, add:\n" +
+      "  DIRECT_URL = (from Neon dashboard → Connection details → Direct / non-pooler host)\n" +
+      "Keep DATABASE_URL as the pooled URL for the running app if you prefer.\n"
+  );
+  process.exit(1);
+}
+
 process.exit(0);

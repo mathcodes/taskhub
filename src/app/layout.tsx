@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GlobalVoiceChrome } from "@/components/GlobalVoiceChrome";
 import { UserOpenAIKeyProvider } from "@/components/UserOpenAIKeyProvider";
 import { VoiceAssistantProvider } from "@/components/VoiceAssistantProvider";
 import "./globals.css";
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Task Hub — agentic schedules & logs",
-  description: "Weekly tasks, completion logs, monitor agent, and daily summaries.",
+  title: "Agent workspace",
+  description: "Task Hub, P21 SQL Query Master, and agentic tools.",
 };
 
 export default function RootLayout({
@@ -31,7 +32,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">
         <UserOpenAIKeyProvider>
-          <VoiceAssistantProvider>{children}</VoiceAssistantProvider>
+          <VoiceAssistantProvider>
+            <GlobalVoiceChrome />
+            {children}
+          </VoiceAssistantProvider>
         </UserOpenAIKeyProvider>
       </body>
     </html>

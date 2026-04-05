@@ -12,5 +12,6 @@ export default defineConfig({
   engine: "classic",
   datasource: {
     url: env("DATABASE_URL"),
+    // directUrl is defined in prisma/schema.prisma (Neon pooler vs direct for migrations)
   },
 });

@@ -1,6 +1,7 @@
 import { chatCompletion, stripJsonFence } from "@/lib/agents/openai";
 import { normalizeTask, type ParsedTask } from "@/lib/agents/parseTasksFromSpeech";
 import { getTaskHubTimezone } from "@/lib/env";
+import { normalizeVoiceNavigatePath } from "@/lib/voiceNavigate";
 import { prisma } from "@/lib/prisma";
 
 export type VoiceChatTurn = { role: "user" | "assistant"; content: string };
@@ -12,9 +13,9 @@ export async function runVoiceAssistantTurn(params: {
   pageSummary: string;
   priorMessages: VoiceChatTurn[];
   apiKey?: string;
-}): Promise<{ reply: string; createdTaskCount: number }> {
+}): Promise<{ reply: string; createdTaskCount: number; navigateTo: string | null }> {
   const tz = getTaskHubTimezone();
-  const system = `You are the voice assistant for Task Hub: weekly task schedules, completion logs, and AI briefings.
+  const system = `You are the voice assistant for this app: Task Hub (weekly tasks, logs, agents), P21 SQL Query Master (natural language to SQL), and the home page that lists features.
 
 Configured timezone: ${tz}.
 
@@ -28,12 +29,17 @@ Help them with:
 - Questions about their tasks, schedules, today’s slots, completion log, or agents.
 - Explaining what is on screen or what to do next.
 - Adding tasks when they ask to create, add, remember, or schedule something.
+- P21 / SQL questions when that context is relevant.
+- When they clearly ask to open, go to, or navigate to a screen, set "navigate" to one of: "/", "/taskhub", "/p21". Use null if they are not asking to change pages.
 
 You MUST respond with ONLY valid JSON (no markdown fences):
 {
   "reply": "string — concise, friendly, suitable to read aloud",
-  "tasks": [ ... ]
+  "tasks": [ ... ],
+  "navigate": null
 }
+
+"navigate" must be null or exactly "/", "/taskhub", or "/p21".
 
 Use an empty "tasks" array when they are not asking to create tasks.
 
@@ -71,6 +77,7 @@ User said (transcribed speech):
   }
   const o = parsed as Record<string, unknown>;
   const reply = typeof o.reply === "string" ? o.reply.trim() : "I could not form a reply.";
+  const navigateTo = normalizeVoiceNavigatePath(o.navigate);
   const tasksRaw = Array.isArray(o.tasks) ? o.tasks : [];
   const parsedTasks: ParsedTask[] = [];
   for (const item of tasksRaw) {
@@ -79,7 +86,7 @@ User said (transcribed speech):
   }
 
   if (parsedTasks.length === 0) {
-    return { reply, createdTaskCount: 0 };
+    return { reply, createdTaskCount: 0, navigateTo };
   }
 
   const created = await prisma.$transaction(
@@ -100,5 +107,5 @@ User said (transcribed speech):
     )
   );
 
-  return { reply, createdTaskCount: created.length };
+  return { reply, createdTaskCount: created.length, navigateTo };
 }
