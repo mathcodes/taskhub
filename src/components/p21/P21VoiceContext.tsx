@@ -15,7 +15,7 @@ export function P21VoiceContext({ children }: { children: React.ReactNode }) {
       pathname: path,
       viewLabel: isBoss ? "P21 · BOSS business rules" : "P21 SQL Query Master",
       summary: isBoss
-        ? "BOSS multi-agent pipeline: curated rule examples, T-SQL sketches from sql_p21_db.csv, markdown docs under docs/p21/training/boss/docs, then synthesis into an implementation spec. Nothing is written to P21 automatically."
+        ? "BOSS: examples + SQL sketch + docs, then synthesis outputs full C# from DCNA_BR_TEMPLATE_v1 (Rule class, Execute, logging). User copies the generated .cs; nothing deploys to P21 automatically."
         : "Natural language to T-SQL for Epicor Prophet 21. The question box uses schema retrieved from docs/p21/training/sql_p21_db.csv; NL→SQL and review agents run; SQL is not executed here. User can dictate into the question field with the purple Dictate button.",
     });
     return () => setVoicePageContext(null);

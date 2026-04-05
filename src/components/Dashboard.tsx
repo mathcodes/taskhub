@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useVoicePageContext } from "@/components/VoiceAssistantProvider";
+import { formatIsoDateTimeUtc } from "@/lib/formatIsoDateTime";
 import { readJsonResponse } from "@/lib/readJsonResponse";
 import { useOpenAIFetchHeaders } from "@/components/UserOpenAIKeyProvider";
 
@@ -197,7 +198,7 @@ export function Dashboard() {
     if (tab === "log") {
       const sample = allLogs.slice(0, 25).map(
         (l) =>
-          `- ${l.taskTitle} at ${new Date(l.completedAt).toLocaleString()}${l.rating != null ? `, rating ${l.rating}/5` : ""}${l.notes ? ` — ${l.notes}` : ""}`
+          `- ${l.taskTitle} at ${formatIsoDateTimeUtc(l.completedAt)}${l.rating != null ? `, rating ${l.rating}/5` : ""}${l.notes ? ` — ${l.notes}` : ""}`
       );
       return [`${allLogs.length} completion log entries (newest listed first, up to 25 shown):`, ...sample].join(
         "\n"
@@ -601,7 +602,7 @@ export function Dashboard() {
                       <span className="text-zinc-200">{l.taskTitle}</span>
                       <span className="mx-2 text-zinc-600">·</span>
                       <span className="font-mono text-xs text-zinc-500">
-                        {new Date(l.completedAt).toLocaleString()}
+                        {formatIsoDateTimeUtc(l.completedAt)}
                       </span>
                       {l.rating != null && (
                         <span className="ml-2 text-amber-200/90">★ {l.rating}/5</span>

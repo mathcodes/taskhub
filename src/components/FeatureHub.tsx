@@ -31,6 +31,14 @@ const FEATURES: Feature[] = [
     accent: "from-violet-500/20 to-fuchsia-600/10 border-violet-500/30 hover:border-violet-400/50",
   },
   {
+    href: "/p21/boss",
+    title: "BOSS · Business Rule agent",
+    tagline: "Prompt → implementation spec",
+    description:
+      "Multi-agent pipeline over curated rule examples and P21 training docs: NL understanding, doc-grounded T-SQL sketches, and synthesis into a spec you can implement in P21. Nothing is written to P21 automatically.",
+    accent: "from-rose-500/20 to-pink-600/10 border-rose-500/30 hover:border-rose-400/50",
+  },
+  {
     href: "/playbooks",
     title: "Department playbooks",
     tagline: "SOPs → guided runs for the floor",
@@ -49,7 +57,7 @@ export function FeatureHub() {
       pathname: pathname || "/",
       viewLabel: "Home · Choose a feature",
       summary:
-        "Landing page with links to Task Hub, P21 SQL Query Master, and Department playbooks (SOP uploads and worker assignments). User can say e.g. open task hub, go to P21, or open playbooks to navigate.",
+        "Landing page with links to Task Hub, P21 SQL Query Master, BOSS business rules, and Department playbooks (SOP uploads and worker assignments). User can say e.g. open task hub, go to P21, open BOSS, or open playbooks to navigate.",
     });
     return () => setVoicePageContext(null);
   }, [pathname, setVoicePageContext]);

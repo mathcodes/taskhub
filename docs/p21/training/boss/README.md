@@ -9,6 +9,7 @@
 | **`docs/*.md`** | Short overviews, org standards, governance (keyword search). |
 | **`docs/business_rule_examples.txt`** | **AI bundle** of real P21 business-rule C# samples: one `FILE_START`…`FILE_END` block per source file. Parsed into **~56 chunks** for retrieval (see code: `bossBundleCorpus.ts`). |
 | **`examples/rules.examples.json`** | Curated **prompt → pattern** rows for NL alignment (tags, outline, P21 notes). |
+| **`docs/DCNA_BR_TEMPLATE_v1.txt`** | **C# skeleton** (namespace, `Rule`, `Execute`, logging) the synthesis step starts from to emit a full `.cs` file. |
 | **`AGENT.md`** | Maintainer notes for the pipeline. |
 
 ## Bundle file (`business_rule_examples.txt`)
@@ -32,4 +33,4 @@ Edit `examples/rules.examples.json` — add more `userPrompt` / `tags` rows that
 
 ## SQL and safety
 
-The SQL step only proposes **read-style** T-SQL sketches; nothing executes in-app. **P21 rule implementation** (C# / Visual Rules) still happens in your controlled process.
+The SQL step only proposes **read-style** T-SQL sketches; nothing executes in-app. **BOSS synthesis** turns the template plus retrieved examples/docs into **complete C#** for you to compile and attach in P21—still under your controlled process.

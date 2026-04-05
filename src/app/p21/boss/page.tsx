@@ -5,7 +5,7 @@ import { P21VoiceContext } from "@/components/p21/P21VoiceContext";
 export const metadata = {
   title: "P21 · BOSS Business Rule agent",
   description:
-    "Multi-agent pipeline: examples, SQL sketches, docs grounding, synthesized rule spec.",
+    "Multi-agent pipeline: examples, SQL sketches, docs grounding, then full C# from DCNA_BR_TEMPLATE_v1.",
 };
 
 export default function P21BossPage() {
@@ -19,12 +19,14 @@ export default function P21BossPage() {
           BOSS — Business Rule agent
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-          Describe a rule in plain English. Four agents run in sequence:{" "}
-          <strong className="font-medium text-zinc-300">examples</strong> (match curated patterns),{" "}
-          <strong className="font-medium text-zinc-300">SQL</strong> (T-SQL sketch + schema excerpt),{" "}
-          <strong className="font-medium text-zinc-300">docs</strong> (grounding from your markdown), then{" "}
-          <strong className="font-medium text-zinc-300">synthesis</strong> (one implementation spec). Add
-          training under{" "}
+          Describe a rule in plain English. Agents run:{" "}
+          <strong className="font-medium text-zinc-300">examples</strong>,{" "}
+          <strong className="font-medium text-zinc-300">SQL</strong>,{" "}
+          <strong className="font-medium text-zinc-300">docs</strong>, then{" "}
+          <strong className="font-medium text-zinc-300">synthesis</strong> — a complete C# business rule
+          starting from{" "}
+          <code className="font-mono text-xs text-zinc-500">DCNA_BR_TEMPLATE_v1.txt</code>. Add training
+          under{" "}
           <code className="font-mono text-xs text-zinc-500">docs/p21/training/boss/</code>.
         </p>
         <p className="mt-3 text-sm text-zinc-500">

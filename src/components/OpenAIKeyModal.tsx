@@ -119,7 +119,14 @@ export function OpenAIKeyModal({ open, onClose }: Props) {
 
 export function OpenAIKeyButton() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { apiKey, ready } = useUserOpenAIKey();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showSaved = mounted && ready && !!apiKey;
 
   return (
     <>
@@ -127,13 +134,13 @@ export function OpenAIKeyButton() {
         type="button"
         onClick={() => setOpen(true)}
         className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-          ready && apiKey
+          showSaved
             ? "border-teal-500/50 bg-teal-950/50 text-teal-200 hover:border-teal-400"
             : "border-zinc-600 bg-zinc-900/90 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200"
         }`}
         title="OpenAI API key for AI features"
       >
-        {ready && apiKey ? "API key · saved" : "API key"}
+        {showSaved ? "API key · saved" : "API key"}
       </button>
       <OpenAIKeyModal open={open} onClose={() => setOpen(false)} />
     </>

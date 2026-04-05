@@ -1,8 +1,8 @@
 # Task Hub
 
-**Agentic Task Hub** is a [Next.js](https://nextjs.org) app for weekly recurring tasks, completion logs, and optional AI features: a **monitor** agent (alerts from your snapshot), a **daily summary** agent (Markdown brief), and a **voice assistant** that understands what’s on screen and can add tasks from natural language.
+**Agentic Task Hub** is a [Next.js](https://nextjs.org) app with a landing page of self-contained tools: **Task Hub** (weekly tasks, logs, and AI briefings), **P21 SQL Query Master** (natural language → T-SQL sketches), **BOSS** (P21 business rule agent — multi-agent pipeline to full C# from your training corpus), and **Department playbooks** (SOP checklists with worker links). Optional AI features include a **monitor** agent (alerts from your snapshot), a **daily summary** agent (Markdown brief), and a **voice assistant** that understands what’s on screen and can add tasks from natural language.
 
-Dark UI, SQLite + [Prisma](https://www.prisma.io/) locally, and support for **bring-your-own-key (BYOK)** OpenAI so you can deploy publicly without putting your API key in server env.
+Dark UI, [Prisma](https://www.prisma.io/) with PostgreSQL, and **bring-your-own-key (BYOK)** OpenAI so you can deploy publicly without putting your API key in server env.
 
 ---
 
@@ -26,6 +26,12 @@ When the mic is **on**, the control highlights (teal) so you know listening is a
 
 ![Header controls: API key, Hide panel, active microphone](public/IMG3.png)
 
+### Example: BOSS business rule agent (PDF)
+
+This PDF shows the **P21 · BOSS Business Rule agent** in use: describe a rule in plain language, run the pipeline, and review generated C# grounded on your `docs/p21/training/boss/` corpus.
+
+**[Open or download the example (PDF)](public/p21-boss-business-rule-agent.pdf)**
+
 ---
 
 ## Features
@@ -36,6 +42,9 @@ When the mic is **on**, the control highlights (teal) so you know listening is a
 | **Today** | Derived “slots” for the current day; log completions with optional rating and notes. |
 | **Activity log** | History of completions across tasks. |
 | **Agents** | **Monitor** — JSON alerts/insights from a live snapshot; **Daily summary** — Markdown report from yesterday’s logs + today’s snapshot. |
+| **P21 SQL** | NL → SQL + review using a bundled P21 schema dictionary (`docs/p21/training/`); SQL is not executed in-app. |
+| **BOSS** | Business rule agent: retrieval over examples + docs + T-SQL sketches, synthesis into full C# from `DCNA_BR_TEMPLATE_v1`; see [PDF example](public/p21-boss-business-rule-agent.pdf). |
+| **Playbooks** | Supervisors upload JSON playbooks; workers complete steps via token links (email/SMS). |
 | **Voice** | Page-aware chat + optional task creation; requires an OpenAI key (server env or BYOK). |
 | **BYOK** | Paste your key in **API key**; stored in `localStorage` only, sent over HTTPS on AI requests. Falls back to `OPENAI_API_KEY` on the server if unset. |
 
@@ -115,10 +124,12 @@ npm start
 
 ## Project layout (high level)
 
-- `src/app/` — App Router pages and `api/` routes (tasks, snapshot, agents, voice).
-- `src/components/` — `Dashboard`, voice + BYOK UI.
-- `src/lib/` — Prisma client, scheduling/snapshot helpers, OpenAI agents.
+- `src/app/` — App Router pages and `api/` routes (tasks, snapshot, agents, voice, P21, playbooks).
+- `src/components/` — `Dashboard`, `FeatureHub`, P21 panels, playbooks UI, voice + BYOK.
+- `src/lib/` — Prisma client, scheduling/snapshot helpers, OpenAI agents, P21 BOSS pipeline.
+- `docs/p21/training/` — P21 training files (BOSS bundle, NL-SQL examples, SQL dictionary).
 - `prisma/` — Schema and migrations (PostgreSQL).
+- `public/` — Static assets; screenshots (`IMG*.png`) and [example PDF](public/p21-boss-business-rule-agent.pdf).
 
 ---
 

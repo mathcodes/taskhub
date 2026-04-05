@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { formatIsoDateTimeUtc } from "@/lib/formatIsoDateTime";
 import { readJsonResponse } from "@/lib/readJsonResponse";
 
 type Step = {
@@ -125,7 +126,7 @@ function PlaybookRunBody({
         </p>
         <p className="mt-2 text-xs text-zinc-600">
           Status: {data.run.status}
-          {data.run.completedAt ? ` · Completed ${new Date(data.run.completedAt).toLocaleString()}` : ""}
+          {data.run.completedAt ? ` · Completed ${formatIsoDateTimeUtc(data.run.completedAt)}` : ""}
         </p>
       </header>
 

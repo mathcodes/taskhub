@@ -4,6 +4,7 @@ import { runSqlRuleAgent } from "@/lib/p21/boss/agents/sqlRuleAgent";
 import { runSynthesisAgent } from "@/lib/p21/boss/agents/synthesisAgent";
 import { retrieveBossDocs } from "@/lib/p21/boss/bossDocs";
 import { retrieveBossExamples } from "@/lib/p21/boss/bossExamples";
+import { loadBossCSharpTemplate } from "@/lib/p21/boss/bossTemplate";
 import { retrieveRelevantSchema } from "@/lib/p21/schemaDictionary";
 
 export type BossPipelineResult = {
@@ -52,11 +53,14 @@ export async function runBossPipeline(params: {
     }),
   ]);
 
+  const csharpTemplate = loadBossCSharpTemplate();
+
   const synthesis = await runSynthesisAgent({
     userQuestion: q,
     examplesJson,
     sqlJson: JSON.stringify(sqlStage),
     docsJson: JSON.stringify(docsStage),
+    csharpTemplate,
     apiKey: params.apiKey,
   });
 
