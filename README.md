@@ -8,29 +8,57 @@ Dark UI, [Prisma](https://www.prisma.io/) with PostgreSQL, and **bring-your-own-
 
 ## Screenshots
 
-### Today & dashboard
+Static captures in `public/` are named **`0-` … `10-`** (shown in numeric order). Headings group them by feature.
 
-The **Today** tab lists today’s scheduled slots from your weekly rules, with status (e.g. due soon, overdue), due times in your configured timezone, and **Log completion** for check-ins.
+### Department playbooks (`0-` … `2-`)
 
-The header includes **API key** (BYOK) and the **voice** mic, aligned to the main content column.
+Supervisors paste JSON playbooks; the app expands steps with an agent, assigns workers, and sends private links. **Preview walkthrough** and **Open walkthrough (sent)** open the chart + table + step-by-step modal.
 
-![Today tab: schedules, API key and mic in the header, Today’s slots with Log completion](public/IMG1.png)
+![`0-` Playbooks — create and expand](public/0-Playbook1.png)
 
-### Voice assistant
+![`1-` Playbooks — assign workers and guide buttons](public/1-Playbook2.png)
 
-Voice is **toggle-based**: turn the mic on, speak (optionally about the current tab or your tasks), then turn it off to send the transcript to the model. The panel shows conversation history and on-screen hints when the mic is idle.
+![`2-` Playbooks — results and saved list](public/2-Playbook3.png)
 
-![Voice panel: mic off instructions](public/IMG2.png)
+### Agent workspace (`3-`)
 
-When the mic is **on**, the control highlights (teal) so you know listening is active. You can **Hide panel** without turning the mic off, or use **API key** to save your OpenAI key in the browser only.
+Landing page: open **Task Hub**, **P21 SQL Query Master**, **BOSS**, or **Department playbooks**; sticky bar has **API key** (BYOK), dictate, and voice mic.
 
-![Header controls: API key, Hide panel, active microphone](public/IMG3.png)
+![`3-` Agent workspace — feature cards](public/3-MainApp.png)
 
-### Example: BOSS business rule agent (PDF)
+### BOSS — Business Rule agent (`4-` … `6-`)
 
-This PDF shows the **P21 · BOSS Business Rule agent** in use: describe a rule in plain language, run the pipeline, and review generated C# grounded on your `docs/p21/training/boss/` corpus.
+Natural-language rule → multi-agent pipeline → full C# from `DCNA_BR_TEMPLATE_v1` and your `docs/p21/training/boss/` corpus.
 
-**[Open or download the example (PDF)](public/p21-boss-business-rule-agent.pdf)**
+![`4-` BOSS — request and retrieval](public/4-BusinessRuleBOSS.png)
+
+![`5-` BOSS — synthesis and generated C#](public/5-BusinessRuleBOSS2.png)
+
+![`6-` BOSS — stages and detail](public/6-BusinessRuleBOSS3.png)
+
+### P21 SQL Query Master (`7-` … `8-`)
+
+Plain English → T-SQL + review against the bundled dictionary; SQL is not run in-app.
+
+![`7-` SQL Query Master — question and output](public/7-SQLQueryMaster1.png)
+
+![`8-` SQL Query Master — review](public/8-SQLQueryMaster2.png)
+
+### Task Hub (`9-` … `10-`)
+
+Weekly tasks, **Today**, activity log, and agents (monitor + daily summary).
+
+![`9-` Task Hub — dashboard area](public/9-TaskHub1.png)
+
+![`10-` Task Hub — tasks / log / agents](public/10-TaskHub2.png)
+
+### Older captures (optional)
+
+Earlier static shots: **Today** tab [`IMG1.png`](public/IMG1.png), voice panel [`IMG2.png`](public/IMG2.png), header controls [`IMG3.png`](public/IMG3.png).
+
+### BOSS example (PDF)
+
+Export of the **BOSS** flow (generated rule spec / C# context): **[Open or download the example (PDF)](public/p21-boss-business-rule-agent.pdf)**
 
 ---
 
@@ -129,7 +157,7 @@ npm start
 - `src/lib/` — Prisma client, scheduling/snapshot helpers, OpenAI agents, P21 BOSS pipeline.
 - `docs/p21/training/` — P21 training files (BOSS bundle, NL-SQL examples, SQL dictionary).
 - `prisma/` — Schema and migrations (PostgreSQL).
-- `public/` — Static assets; screenshots (`IMG*.png`) and [example PDF](public/p21-boss-business-rule-agent.pdf).
+- `public/` — Screenshots `0-` … `10-` (see [Screenshots](#screenshots)), optional `IMG*.png`, and [example PDF](public/p21-boss-business-rule-agent.pdf).
 
 ---
 
