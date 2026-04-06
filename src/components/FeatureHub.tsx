@@ -19,8 +19,24 @@ const FEATURES: Feature[] = [
     title: "The Task Hub",
     tagline: "Schedules, logs & AI briefings",
     description:
-      "Weekly recurring tasks, completion logs with optional ratings, voice assistant with page context, and agents for monitor alerts and daily summaries. Bring your own OpenAI key or use server config.",
+      "Weekly recurring tasks, completion logs with optional ratings, voice assistant with page context, and agents for monitor alerts and daily summaries. Includes Multi-Agent Assessment (Claude) from the Task Hub page. Bring your own OpenAI key or use server config.",
     accent: "from-teal-500/20 to-emerald-600/10 border-teal-500/30 hover:border-teal-400/50",
+  },
+  {
+    href: "/taskhub/multi-agent-assessment",
+    title: "Multi-Agent Assessment",
+    tagline: "Claude · concierge → committee",
+    description:
+      "Demo form validated by multiple Claude agents in sequence—investigator, administrator, and a grading committee—with logs and a downloadable transcript. Uses ANTHROPIC_API_KEY on the server.",
+    accent: "from-indigo-500/20 to-violet-600/10 border-indigo-500/30 hover:border-indigo-400/50",
+  },
+  {
+    href: "/joke-agents",
+    title: "Three joke agents",
+    tagline: "Three phrases → three roasts",
+    description:
+      "Enter three words or phrases; each comedian must use all three in one joke—traditionalist, clown, and funniest-on-earth take turns. Optional speech. Uses your OpenAI key (BYOK) or the server’s.",
+    accent: "from-fuchsia-500/20 to-orange-600/10 border-fuchsia-500/30 hover:border-orange-400/40",
   },
   {
     href: "/p21",
@@ -57,7 +73,7 @@ export function FeatureHub() {
       pathname: pathname || "/",
       viewLabel: "Home · Choose a feature",
       summary:
-        "Landing page with links to Task Hub, P21 SQL Query Master, BOSS business rules, and Department playbooks (SOP uploads and worker assignments). User can say e.g. open task hub, go to P21, open BOSS, or open playbooks to navigate.",
+        "Landing page with Task Hub, Multi-Agent Assessment, joke agents, P21 SQL, BOSS, and playbooks. Say e.g. open joke agents, task hub, P21, BOSS, or playbooks.",
     });
     return () => setVoicePageContext(null);
   }, [pathname, setVoicePageContext]);

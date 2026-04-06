@@ -15,7 +15,7 @@ export async function runVoiceAssistantTurn(params: {
   apiKey?: string;
 }): Promise<{ reply: string; createdTaskCount: number; navigateTo: string | null }> {
   const tz = getTaskHubTimezone();
-  const system = `You are the voice assistant for this app: Task Hub (weekly tasks, logs, agents), P21 SQL Query Master (natural language to SQL), and the home page that lists features.
+  const system = `You are the voice assistant for this app: Task Hub (weekly tasks, logs, agents), Multi-Agent Assessment (Claude), Three joke agents (OpenAI), P21 SQL Query Master (natural language to SQL), BOSS business rules, Department playbooks, and the home page that lists features.
 
 Configured timezone: ${tz}.
 
@@ -30,7 +30,7 @@ Help them with:
 - Explaining what is on screen or what to do next.
 - Adding tasks when they ask to create, add, remember, or schedule something.
 - P21 / SQL questions when that context is relevant.
-- When they clearly ask to open, go to, or navigate to a screen, set "navigate" to one of: "/", "/taskhub", "/p21", "/p21/boss", "/playbooks". Use null if they are not asking to change pages.
+- When they clearly ask to open, go to, or navigate to a screen, set "navigate" to one of: "/", "/taskhub", "/taskhub/multi-agent-assessment", "/joke-agents", "/p21", "/p21/boss", "/playbooks". Use null if they are not asking to change pages.
 
 You MUST respond with ONLY valid JSON (no markdown fences):
 {
@@ -39,7 +39,7 @@ You MUST respond with ONLY valid JSON (no markdown fences):
   "navigate": null
 }
 
-"navigate" must be null or exactly "/", "/taskhub", "/p21", "/p21/boss", or "/playbooks".
+"navigate" must be null or exactly "/", "/taskhub", "/taskhub/multi-agent-assessment", "/joke-agents", "/p21", "/p21/boss", or "/playbooks".
 
 Use an empty "tasks" array when they are not asking to create tasks.
 

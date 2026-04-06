@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useVoicePageContext } from "@/components/VoiceAssistantProvider";
@@ -357,6 +358,27 @@ export function Dashboard() {
           )}
         </div>
       </header>
+
+      <section className="mb-10 rounded-2xl border border-indigo-500/25 bg-gradient-to-br from-indigo-950/50 to-violet-950/30 p-5 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-indigo-400/90">
+              Task Hub · Extra
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-zinc-50">Multi-Agent Assessment</h2>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">
+              Submit a sample profile form and run a Claude pipeline: concierge greeting, investigator,
+              administrator, and a five-agent grading committee—with live logs and a final report.
+            </p>
+          </div>
+          <Link
+            href="/taskhub/multi-agent-assessment"
+            className="shrink-0 rounded-xl bg-indigo-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-indigo-500"
+          >
+            Open assessment →
+          </Link>
+        </div>
+      </section>
 
       {err && (
         <div className="mb-6 rounded-lg border border-rose-500/40 bg-rose-950/40 px-4 py-3 text-sm text-rose-100">
