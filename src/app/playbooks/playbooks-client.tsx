@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import {
+  PlaybookGuideModal,
+  type GuideStep,
+} from "@/components/playbooks/PlaybookGuideModal";
 import { readJsonResponse } from "@/lib/readJsonResponse";
 import { useOpenAIFetchHeaders } from "@/components/UserOpenAIKeyProvider";
 import { useVoicePageContext } from "@/components/VoiceAssistantProvider";
@@ -42,6 +46,32 @@ export function PlaybooksClient() {
   const [assignBusy, setAssignBusy] = useState(false);
   const [assignResult, setAssignResult] = useState<Record<string, unknown> | null>(null);
 
+  /** Loaded when a playbook is selected — lets supervisors preview steps before assigning. */
+  const [previewTitle, setPreviewTitle] = useState<string | null>(null);
+  const [previewDepartment, setPreviewDepartment] = useState<string | null>(null);
+  const [previewSteps, setPreviewSteps] = useState<GuideStep[]>([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  /** Set after a successful “Assign & notify” — unlocks the post-assignment walkthrough button. */
+  const [postAssignGuide, setPostAssignGuide] = useState<{
+    title: string;
+    department: string | null;
+    label: string | null;
+    steps: GuideStep[];
+  } | null>(null);
+
+  type ModalState =
+    | { open: false }
+    | {
+        open: true;
+        variant: "preview" | "post-assignment";
+        title: string;
+        department: string | null;
+        batchLabel: string | null;
+        steps: GuideStep[];
+      };
+  const [modal, setModal] = useState<ModalState>({ open: false });
+
   const load = useCallback(async () => {
     setLoadErr(null);
     try {
@@ -65,10 +95,50 @@ export function PlaybooksClient() {
       pathname: pathname || "/playbooks",
       viewLabel: "Department playbooks",
       summary:
-        "Supervisors upload JSON playbooks; the app expands steps with an agent, then assigns workers who get email/SMS links to complete checklists with notes.",
+        "Supervisors upload JSON playbooks; the app expands steps with an agent. Pick a playbook to preview the full walkthrough, assign workers, then open the walkthrough again after links are sent. Workers use their private links to complete steps.",
     });
     return () => setVoicePageContext(null);
   }, [pathname, setVoicePageContext]);
+
+  useEffect(() => {
+    if (!assignPlaybookId) {
+      setPreviewTitle(null);
+      setPreviewDepartment(null);
+      setPreviewSteps([]);
+      return;
+    }
+    let cancelled = false;
+    setPreviewLoading(true);
+    void (async () => {
+      try {
+        const res = await fetch(`/api/playbooks/templates/${encodeURIComponent(assignPlaybookId)}`);
+        const data = await readJsonResponse<{
+          error?: string;
+          title?: string;
+          department?: string | null;
+          steps?: GuideStep[];
+        }>(res);
+        if (cancelled) return;
+        if (!res.ok) {
+          setPreviewTitle(null);
+          setPreviewSteps([]);
+          return;
+        }
+        setPreviewTitle(typeof data.title === "string" ? data.title : null);
+        setPreviewDepartment(data.department ?? null);
+        setPreviewSteps(Array.isArray(data.steps) ? data.steps : []);
+      } catch {
+        if (!cancelled) {
+          setPreviewSteps([]);
+        }
+      } finally {
+        if (!cancelled) setPreviewLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [assignPlaybookId]);
 
   async function createTemplate() {
     setCreateBusy(true);
@@ -104,6 +174,7 @@ export function PlaybooksClient() {
   async function submitAssignment() {
     setAssignBusy(true);
     setAssignResult(null);
+    setPostAssignGuide(null);
     try {
       const res = await fetch("/api/playbooks/assignments", {
         method: "POST",
@@ -120,9 +191,25 @@ export function PlaybooksClient() {
             })),
         }),
       });
-      const data = await readJsonResponse<{ error?: string } & Record<string, unknown>>(res);
+      const data = await readJsonResponse<{
+        error?: string;
+        assignmentId?: string;
+        playbookTitle?: string;
+        playbookDepartment?: string | null;
+        assignmentLabel?: string | null;
+        steps?: GuideStep[];
+      }>(res);
       if (!res.ok) throw new Error(data.error || "Assignment failed");
       setAssignResult(data);
+      const steps = Array.isArray(data.steps) ? data.steps : [];
+      if (typeof data.playbookTitle === "string" && steps.length > 0) {
+        setPostAssignGuide({
+          title: data.playbookTitle,
+          department: data.playbookDepartment ?? null,
+          label: data.assignmentLabel ?? null,
+          steps,
+        });
+      }
     } catch (e) {
       setAssignResult({ error: e instanceof Error ? e.message : "Assignment failed" });
     } finally {
@@ -141,8 +228,10 @@ export function PlaybooksClient() {
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-50">Department playbooks</h1>
         <p className="mt-3 text-sm leading-relaxed text-zinc-400">
           Upload instructions as JSON (see <code className="font-mono text-xs text-zinc-500">docs/playbooks/FORMAT.md</code>
-          ). The agent turns each line into a guided step. Assign workers by email and/or SMS; they open a private link—no
-          login required.
+          ). The agent expands each line into a full walkthrough. <strong className="font-medium text-zinc-300">Select a
+          playbook</strong> to preview the step-by-step guide; then add workers and send links. After assignment
+          succeeds, <strong className="font-medium text-zinc-300">Open walkthrough (sent)</strong> shows the same guide
+          with your batch label—use it to brief the team or print from the browser.
         </p>
       </header>
 
@@ -177,7 +266,9 @@ export function PlaybooksClient() {
       <section className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-6 shadow-lg">
         <h2 className="text-lg font-medium text-zinc-100">2. Assign workers</h2>
         <p className="mt-2 text-sm text-zinc-500">
-          Each person gets email (Resend) and/or SMS (Twilio) if configured in environment variables.
+          Each person gets email (Resend) and/or SMS (Twilio) if configured in environment variables. Choose a playbook
+          first—you can <strong className="text-zinc-400">Preview walkthrough</strong> to see the expanded steps, table
+          summary, and overview chart before sending.
         </p>
         <div className="mt-4 space-y-3">
           <label className="block text-sm text-zinc-400">
@@ -242,14 +333,15 @@ export function PlaybooksClient() {
               />
             </div>
           ))}
-          <button
-            type="button"
-            onClick={addWorkerRow}
-            className="text-sm text-amber-400/90 hover:text-amber-300"
-          >
-            + Add worker
-          </button>
+        <button
+          type="button"
+          onClick={addWorkerRow}
+          className="text-sm text-amber-400/90 hover:text-amber-300"
+        >
+          + Add worker
+        </button>
         </div>
+
         <button
           type="button"
           disabled={assignBusy || !assignPlaybookId}
@@ -258,12 +350,69 @@ export function PlaybooksClient() {
         >
           {assignBusy ? "Sending…" : "Assign & notify"}
         </button>
+
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            disabled={
+              !assignPlaybookId || previewLoading || previewSteps.length === 0 || !previewTitle
+            }
+            onClick={() =>
+              setModal({
+                open: true,
+                variant: "preview",
+                title: previewTitle!,
+                department: previewDepartment,
+                batchLabel: assignLabel.trim() || null,
+                steps: previewSteps,
+              })
+            }
+            className="rounded-xl border border-amber-600/50 bg-amber-950/40 px-5 py-2.5 text-sm font-medium text-amber-100 hover:border-amber-500/70 hover:bg-amber-950/60 disabled:opacity-40"
+          >
+            {previewLoading ? "Loading steps…" : "Preview walkthrough"}
+          </button>
+          <button
+            type="button"
+            disabled={assignBusy || !postAssignGuide || postAssignGuide.steps.length === 0}
+            onClick={() =>
+              setModal({
+                open: true,
+                variant: "post-assignment",
+                title: postAssignGuide!.title,
+                department: postAssignGuide!.department,
+                batchLabel: postAssignGuide!.label,
+                steps: postAssignGuide!.steps,
+              })
+            }
+            className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-40"
+          >
+            Open walkthrough (sent)
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-zinc-600">
+          <strong className="text-zinc-500">Open walkthrough (sent)</strong> becomes available after{" "}
+          <strong className="text-zinc-500">Assign &amp; notify</strong> succeeds. It opens a full-screen guide with an
+          overview chart, summary table, and detailed steps—same content as{" "}
+          <strong className="text-zinc-500">Preview walkthrough</strong>, plus your batch label when applicable.
+        </p>
         {assignResult !== null && (
           <pre className="mt-4 max-h-80 overflow-auto rounded-lg bg-black/50 p-3 font-mono text-xs text-zinc-300">
             {JSON.stringify(assignResult, null, 2)}
           </pre>
         )}
       </section>
+
+      {modal.open ? (
+        <PlaybookGuideModal
+          open
+          onClose={() => setModal({ open: false })}
+          title={modal.title}
+          department={modal.department}
+          batchLabel={modal.batchLabel}
+          steps={modal.steps}
+          variant={modal.variant}
+        />
+      ) : null}
 
       <section>
         <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-500">Saved playbooks</h2>

@@ -6,11 +6,9 @@ Dark UI, [Prisma](https://www.prisma.io/) with PostgreSQL, and **bring-your-own-
 
 ---
 
-## Screenshots
+## Examples
 
-Static captures in `public/` are named **`0-` … `10-`** (shown in numeric order). Headings group them by feature.
-
-### Department playbooks (`0-` … `2-`)
+### Department playbooks  
 
 Supervisors paste JSON playbooks; the app expands steps with an agent, assigns workers, and sends private links. **Preview walkthrough** and **Open walkthrough (sent)** open the chart + table + step-by-step modal.
 
@@ -26,7 +24,7 @@ Landing page: open **Task Hub**, **P21 SQL Query Master**, **BOSS**, or **Depart
 
 ![`3-` Agent workspace — feature cards](public/3-MainApp.png)
 
-### BOSS — Business Rule agent (`4-` … `6-`)
+### BOSS — Business Rule agent 
 
 Natural-language rule → multi-agent pipeline → full C# from `DCNA_BR_TEMPLATE_v1` and your `docs/p21/training/boss/` corpus.
 
@@ -36,7 +34,7 @@ Natural-language rule → multi-agent pipeline → full C# from `DCNA_BR_TEMPLAT
 
 ![`6-` BOSS — stages and detail](public/6-BusinessRuleBOSS3.png)
 
-### P21 SQL Query Master (`7-` … `8-`)
+### P21 SQL Query Master  
 
 Plain English → T-SQL + review against the bundled dictionary; SQL is not run in-app.
 
@@ -44,7 +42,7 @@ Plain English → T-SQL + review against the bundled dictionary; SQL is not run 
 
 ![`8-` SQL Query Master — review](public/8-SQLQueryMaster2.png)
 
-### Task Hub (`9-` … `10-`)
+### Task Hub
 
 Weekly tasks, **Today**, activity log, and agents (monitor + daily summary).
 
@@ -157,7 +155,7 @@ npm start
 - `src/lib/` — Prisma client, scheduling/snapshot helpers, OpenAI agents, P21 BOSS pipeline.
 - `docs/p21/training/` — P21 training files (BOSS bundle, NL-SQL examples, SQL dictionary).
 - `prisma/` — Schema and migrations (PostgreSQL).
-- `public/` — Screenshots `0-` … `10-` (see [Screenshots](#screenshots)), optional `IMG*.png`, and [example PDF](public/p21-boss-business-rule-agent.pdf).
+- `public/` — Screenshots `0-` … `10-` (see [Examples](#examples)), optional `IMG*.png`, and [example PDF](public/p21-boss-business-rule-agent.pdf).
 
 ---
 

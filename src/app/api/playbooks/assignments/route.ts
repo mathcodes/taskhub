@@ -122,9 +122,34 @@ export async function POST(req: Request) {
     });
   }
 
+  let steps: {
+    index: number;
+    title: string;
+    instruction: string;
+    guidance: string;
+    recordHint: string;
+  }[] = [];
+  try {
+    const j = JSON.parse(playbook.stepsJson) as {
+      steps?: {
+        index: number;
+        title: string;
+        instruction: string;
+        guidance: string;
+        recordHint: string;
+      }[];
+    };
+    steps = Array.isArray(j.steps) ? j.steps : [];
+  } catch {
+    steps = [];
+  }
+
   return NextResponse.json({
     assignmentId,
     playbookTitle: playbook.title,
+    playbookDepartment: playbook.department,
+    assignmentLabel: body.label?.trim() || null,
+    steps,
     workers: workersOut,
   });
 }
