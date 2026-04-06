@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Corpus builder — uploaded blobs (deleted after run; folder may remain empty)
+.data/
+
 /src/generated/prisma
 
 # local SQLite (use migrations + DATABASE_URL instead)

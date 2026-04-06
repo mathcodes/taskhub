@@ -62,6 +62,14 @@ const FEATURES: Feature[] = [
       "Supervisors upload JSON checklists; an agent expands each step into a walkthrough. Assign workers by email or SMS—they get a private link to complete steps and log notes. Built for warehouse, DC, and counter workflows.",
     accent: "from-amber-500/20 to-orange-600/10 border-amber-500/30 hover:border-amber-400/50",
   },
+  {
+    href: "/corpus-builder",
+    title: "Corpus builder",
+    tagline: "Uploads → training-ready files",
+    description:
+      "Upload PDFs, Office files, images, text, or URLs. Multiple agents extract and structure everything into Markdown and a reference index for RAG or fine-tuning; originals are deleted after processing to save space.",
+    accent: "from-cyan-500/20 to-sky-600/10 border-cyan-500/30 hover:border-cyan-400/50",
+  },
 ];
 
 export function FeatureHub() {
@@ -73,7 +81,7 @@ export function FeatureHub() {
       pathname: pathname || "/",
       viewLabel: "Home · Choose a feature",
       summary:
-        "Landing page with Task Hub, Multi-Agent Assessment, joke agents, P21 SQL, BOSS, and playbooks. Say e.g. open joke agents, task hub, P21, BOSS, or playbooks.",
+        "Landing page with Task Hub, Multi-Agent Assessment, joke agents, P21 SQL, BOSS, playbooks, and corpus builder. Say e.g. open joke agents, task hub, P21, BOSS, playbooks, or corpus builder.",
     });
     return () => setVoicePageContext(null);
   }, [pathname, setVoicePageContext]);
