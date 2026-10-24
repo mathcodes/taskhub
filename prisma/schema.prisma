@@ -1,0 +1,139 @@
+// Task Hub — PostgreSQL in production (e.g. Vercel + Neon); local dev uses DATABASE_URL
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+// Use `DATABASE_URL` for queries and migrations. (Neon: if migrate deploy times out with a pooler host,
+// run migrations with a direct connection string, or use a separate CI job—see VERCEL.md.)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A recurring task you want to track (e.g. "Morning standup prep").
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  active      Boolean  @default(true)
+  /// Higher = more urgent in UI / agent context
+  priority    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  schedules TaskSchedule[]
+  logs      TaskCompletionLog[]
+}
+
+/// Which weekday(s) this task applies to. Optional due time is local wall clock (TASKHUB_TIMEZONE).
+model TaskSchedule {
+  id        String @id @default(cuid())
+  taskId    String
+  task      Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  /// 0 = Sunday … 6 = Saturday (JS getDay convention)
+  dayOfWeek Int
+  /// "HH:MM" 24h, optional — if null, "due" is end of that calendar day
+  dueTime   String?
+
+  @@index([taskId])
+}
+
+/// Append-only log when you complete a task (rating, notes, optional JSON metadata).
+model TaskCompletionLog {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+  rating      Int?
+  notes       String?
+  /// Extra structured fields from UI or automation (JSON string)
+  meta        String?
+
+  @@index([taskId])
+  @@index([completedAt])
+}
+
+/// Cached daily summary from the daily-summary agent (optional persistence).
+model DailyReport {
+  id           String   @id @default(cuid())
+  /// Calendar day in TASKHUB_TIMEZONE (store as UTC midnight of that day or ISO date string)
+  reportDate   String
+  bodyMarkdown String
+  createdAt    DateTime @default(now())
+
+  @@unique([reportDate])
+}
+
+// --- Department playbooks (supervisor upload → agent walkthrough → assign workers) ---
+
+model PlaybookTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  department  String?
+  /// Original upload JSON (validated)
+  rawJson     String   @db.Text
+  /// Agent-expanded steps JSON: array of { index, title, instruction, guidance, recordHint }
+  stepsJson   String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments PlaybookAssignment[]
+}
+
+model PlaybookAssignment {
+  id           String           @id @default(cuid())
+  playbookId   String
+  playbook     PlaybookTemplate @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  /// Optional batch / shift label
+  label        String?
+  createdAt    DateTime         @default(now())
+
+  workers PlaybookAssignmentWorker[]
+
+  @@index([playbookId])
+}
+
+model PlaybookAssignmentWorker {
+  id           String             @id @default(cuid())
+  assignmentId String
+  assignment   PlaybookAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  displayName  String
+  email        String?
+  phone        String?
+  /// Secret path token for magic link /playbooks/r/[accessToken]
+  accessToken  String             @unique
+  notifiedAt   DateTime?
+  createdAt    DateTime           @default(now())
+
+  run PlaybookRun?
+
+  @@index([assignmentId])
+}
+
+model PlaybookRun {
+  id          String                   @id @default(cuid())
+  workerId    String                   @unique
+  worker      PlaybookAssignmentWorker @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  status      String                   @default("pending")
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  stepResults PlaybookStepResult[]
+
+  @@index([status])
+}
+
+model PlaybookStepResult {
+  id          String      @id @default(cuid())
+  runId       String
+  run         PlaybookRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepIndex   Int
+  done        Boolean     @default(true)
+  note        String?
+  completedAt DateTime    @default(now())
+
+  @@unique([runId, stepIndex])
+  @@index([runId])
+}
