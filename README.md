@@ -1,5 +1,7 @@
 # Task Hub
 
+**Live demo:** [taskhub-blue-seven.vercel.app](https://taskhub-blue-seven.vercel.app) · try [Pitch Coach](https://taskhub-blue-seven.vercel.app/pitch-coach) with the built-in sample. AI features are bring-your-own-key (**Add API keys** in the header); keys stay in your browser.
+
 **Agentic Task Hub** is a [Next.js](https://nextjs.org) app with a landing page of self-contained tools: **Task Hub** (weekly tasks, logs, and AI briefings), **SQL Query** (plain language to reviewed, read-only SQL), **Department playbooks** (SOP checklists with worker links), **Corpus Builder**, and **Pitch Coach** (recording-to-score pitch analysis). Optional AI features include a **monitor** agent (alerts from your snapshot), a **daily summary** agent (Markdown brief), and a voice assistant that understands what is on screen and can add tasks from natural language.
 
 Dark UI, [Prisma](https://www.prisma.io/) with PostgreSQL, and **bring-your-own-key (BYOK)** OpenAI so you can deploy publicly without putting your API key in server env.
